@@ -67,6 +67,17 @@ router.post('/auth/register', async (ctx) => {
   })(ctx);
 });
 
+router.get('/secret', async (ctx) => {
+  return passport.authenticate('local', (err, user, info, status) => {
+    if (user) {
+      ctx.status = 200;
+      ctx.body = { secret: "42" }	
+    } else {
+      ctx.status = 401;
+    }
+  })(ctx);
+});
+
 router.get('/', async (ctx) => {
     try {
       const client = await pool.connect()
