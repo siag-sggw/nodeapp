@@ -41,8 +41,7 @@ router.post('/auth/login', async (ctx) => {
       ctx.login(user);
       ctx.status = 200;
     } else {
-      ctx.status = 400;
-      ctx.body = { status: err };
+      ctx.status = 401;
     }
   })(ctx);
 });
@@ -63,8 +62,7 @@ router.post('/auth/register', async (ctx) => {
       ctx.login(user);
       ctx.status = 200;
     } else {
-      ctx.status = 400;
-      ctx.body = { status: err, user: user };
+      ctx.status = 401;
     }
   })(ctx);
 });
