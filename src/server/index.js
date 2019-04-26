@@ -1,4 +1,6 @@
 const Koa = require('koa');
+const Router = require('koa-router');
+const router = new Router();
 const app = new Koa();
 const PORT = process.env.PORT || 5000
 
@@ -8,10 +10,10 @@ const pool = new Pool({
   ssl: true
 });
 
-app.use(async ctx => {
+router.get('/', async (ctx) => {
     try {
       const client = await pool.connect()
-      const result = await client.query('SELECT * FROM test_table');
+      const result = await client.query('SELECT * FROM users');
       const results = { 'results': (result) ? result.rows : null};
       ctx.body = results;
       client.release();
@@ -19,7 +21,7 @@ app.use(async ctx => {
       console.error(err);
       ctx.body = "Error " + err;
     }
-});
-
+})
+app.use(router.routes());
 app.listen(PORT);
 
