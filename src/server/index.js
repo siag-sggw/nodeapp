@@ -69,7 +69,7 @@ router.post('/auth/register', async (ctx) => {
 
 router.get('/secret', async (ctx) => {
   return passport.authenticate('local', (err, user, info, status) => {
-    if (user) {
+    if (user && ctx.isAuthenticated()) {
       ctx.status = 200;
       ctx.body = { secret: "42" }	
     } else {
