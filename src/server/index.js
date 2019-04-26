@@ -1,13 +1,72 @@
 const Koa = require('koa');
+const bcrypt = require('bcryptjs');
+const bodyParser = require('koa-bodyparser');
 const Router = require('koa-router');
+const session = require('koa-session');
+const knex = require('./db/connection');
+const passport = require('koa-passport');
 const router = new Router();
 const app = new Koa();
 const PORT = process.env.PORT || 5000
+
+app.keys = ['super-secret-key'];
+app.use(session(app));
+
+app.use(bodyParser());
+
+require('./auth');
+app.use(passport.initialize());
+app.use(passport.session());
 
 const { Pool } = require('pg');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: true
+});
+
+function addUser(user) {
+  const salt = bcrypt.genSaltSync();
+  const hash = bcrypt.hashSync(user.password, salt);
+  return knex('users')
+  .insert({
+    username: user.username,
+    password: user.password,
+  })
+  .returning('*');
+}
+
+router.post('/auth/login', async (ctx) => {
+  return passport.authenticate('local', (err, user, info, status) => {
+    if (user) {
+      ctx.login(user);
+      ctx.status = 200;
+    } else {
+      ctx.status = 400;
+      ctx.body = { status: err };
+    }
+  })(ctx);
+});
+
+router.get('/auth/logout', async (ctx) => {
+  if (ctx.isAuthenticated()) {
+    ctx.logout();
+  } else {
+    ctx.body = { success: false };
+    ctx.throw(401);
+  }
+});
+
+router.post('/auth/register', async (ctx) => {
+  const user = await addUser(ctx.request.body);
+  return passport.authenticate('local', (err, user, info, status) => {
+    if (user) {
+      ctx.login(user);
+      ctx.status = 200;
+    } else {
+      ctx.status = 400;
+      ctx.body = { status: err, user: user };
+    }
+  })(ctx);
 });
 
 router.get('/', async (ctx) => {
