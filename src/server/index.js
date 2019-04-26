@@ -50,9 +50,9 @@ router.post('/auth/login', async (ctx) => {
 router.get('/auth/logout', async (ctx) => {
   if (ctx.isAuthenticated()) {
     ctx.logout();
+    ctx.status = 204;
   } else {
-    ctx.body = { success: false };
-    ctx.throw(401);
+    ctx.status = 204;
   }
 });
 
