@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const bodyParser = require('koa-bodyparser');
 const Router = require('koa-router');
 const session = require('koa-session');
+const cors = require('@koa/cors');
 const knex = require('./db/connection');
 const passport = require('koa-passport');
 const router = new Router();
@@ -10,6 +11,10 @@ const app = new Koa();
 const PORT = process.env.PORT || 5000
 
 app.keys = ['super-secret-key'];
+app.use(cors({
+    origin(ctx) { return ctx.request.get("Origin") },
+    credentials: true
+}));
 app.use(session(app));
 
 app.use(bodyParser());
@@ -25,8 +30,8 @@ const pool = new Pool({
 });
 
 function addUser(user) {
-  const salt = bcrypt.genSaltSync();
-  const hash = bcrypt.hashSync(user.password, salt);
+  if (!user.password) { console.log("No password parameter") }
+  if (!user.username) { console.log("No username parameter") }
   return knex('users')
   .insert({
     username: user.username,

@@ -28,6 +28,7 @@
     "mocha": "6.1.4"
   },
   "dependencies": {
+    "@koa/cors": "^2.2.3",
     "bcryptjs": "^2.4.3",
     "dotenv": "^7.0.0",
     "knex": "^0.16.5",
