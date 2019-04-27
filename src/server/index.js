@@ -45,8 +45,10 @@ router.post('/auth/login', async (ctx) => {
     if (user) {
       ctx.login(user);
       ctx.status = 200;
+      ctx.body = { username: user.username }
     } else {
       ctx.status = 401;
+      ctx.body = { status: "Invalid credentials" }
     }
   })(ctx);
 });
@@ -55,8 +57,10 @@ router.get('/auth/logout', async (ctx) => {
   if (ctx.isAuthenticated()) {
     ctx.logout();
     ctx.status = 204;
+    ctx.body = {};
   } else {
     ctx.status = 204;
+    ctx.body = {};
   }
 });
 
@@ -66,6 +70,7 @@ router.post('/auth/register', async (ctx) => {
     if (user) {
       ctx.login(user);
       ctx.status = 200;
+      ctx.body = {}
     } else {
       ctx.status = 401;
     }
