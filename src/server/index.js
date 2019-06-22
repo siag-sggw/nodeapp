@@ -88,6 +88,90 @@ router.get('/secret', async (ctx) => {
   })(ctx);
 });
 
+router.put('/favorite', async (ctx) => {
+  if (ctx.isAuthenticated()) {
+    let data = ctx.request.body.stock
+    var favorites = await arrayOfFavorites(ctx.state.user.username)
+    if (!favorites.includes(data)) {
+      favorites.push(data)
+      writeArrayFavoritesToUser(ctx.state.user.username, favorites)
+    }
+        ctx.status = 200;
+        ctx.body = { favorites: favorites }	
+  } else {
+    ctx.status = 403;
+  }
+});
+
+router.delete('/favorite', async (ctx) => {
+  if (ctx.isAuthenticated()) {
+    let data = ctx.request.body.stock
+    var favorites = await arrayOfFavorites(ctx.state.user.username)
+    if (favorites.includes(data)) {
+      console.log("TAK")
+      favorites = favorites.filter(stock => stock != data) 
+      writeArrayFavoritesToUser(ctx.state.user.username, favorites)
+      ctx.status = 200;
+      ctx.body = { favorites: favorites }	
+    }
+    ctx.status = 200;
+    ctx.body = { favorites: favorites }	
+  } else {
+    ctx.status = 403;
+  }
+});
+
+router.get('/favorite', async (ctx) => {
+  if (ctx.isAuthenticated()) {
+    let favorites = await arrayOfFavorites(ctx.state.user.username)
+        ctx.status = 200;
+        ctx.body = { favorites: favorites }	
+  } else {
+    ctx.status = 403;
+  }
+});
+
+async function writeArrayFavoritesToUser(username, favoritesArray) {
+  let string = favoritesArray.join(",")
+  setUserFavorites(username, string)
+}
+
+async function setUserFavorites(username, favoritesString) {
+  console.log(favoritesString)
+  let newData = await knex('users')
+  .where({ username: username })
+  .update({ love_stocks: favoritesString }).returning("love_stocks")
+  console.log("OLOOO "+newData)
+}
+
+async function arrayOfFavorites(username) {
+  let raw = await getUserFavorites(username)
+  let splited = raw[0].love_stocks.split(",")
+  console.log(splited)
+  return splited.filter(stock => stock != "")
+}
+
+function getUserFavorites(username) {
+  return knex('users')
+  .select('love_stocks')
+  .where({ username: username });
+}
+
+// router.get('/favorite', async (ctx) => {
+//   return passport.authenticate('local', (err, user, info, status) => {
+//     if (user && ctx.isAuthenticated()) {
+//       knex('users')
+//         .where({ username: user.username })
+//         .then(rows => {
+//           ctx.status = 200;
+//           ctx.body = { secret: user.username }	
+//         })
+//     } else {
+//       ctx.status = 401;
+//     }
+//   })(ctx);
+// });
+
 app.use(router.routes());
 app.listen(PORT);
 
